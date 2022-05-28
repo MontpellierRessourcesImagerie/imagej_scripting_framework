@@ -1,4 +1,3 @@
-from ij import Menus
 from ij import IJ
 import re
 
