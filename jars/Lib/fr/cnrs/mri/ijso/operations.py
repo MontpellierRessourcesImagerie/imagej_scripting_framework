@@ -1,4 +1,5 @@
 import time
+import re
 from java.beans import PropertyChangeSupport
 from java.lang import Thread
 
@@ -10,6 +11,7 @@ class Operation(Thread):
         self.progress = 0
         self.startTime = 0
         self.endTime = 0
+        self.opName = None
         self.options = Options()
         
     def run(self):
@@ -20,9 +22,22 @@ class Operation(Thread):
     def execute(self):
         pass
     
-    def getName(self):
-        pass
+    def getOptions(self):
+        return self.options
+        
+    def addOption(self, anOption):
+        self.getOptions().add(anOption)
+        
+    def getOpName(self):
+        if not self.opName:
+            self.opName = self.constructOpNameFromClassName()
+        return self.opName
                     
+    def constructOpNameFromClassName(self):
+        classname = type(self).__name__
+        name = re.sub(r"(\w)([A-Z])", r"\1 \2", classname)
+        return name
+        
     def addPropertyChangeListener(self, pcl):
         self.support.addPropertyChangeListener(pcl)
 
@@ -83,7 +98,7 @@ class Option(object):
 class StringOption(Option):
 
     def __init__(self, name, value):
-        Option.__init__(name, str(value))
+        Option.__init__(self, name, str(value))
         
     def isStringType(self):
         return True
@@ -92,7 +107,7 @@ class StringOption(Option):
 class IntOption(Option):
 
     def __init__(self, name, value):
-        Option.__init__(name, int(value))
+        Option.__init__(self, name, int(value))
         
     def isIntType(self):
         return True
@@ -101,7 +116,7 @@ class IntOption(Option):
 class FloatOption(Option):
 
     def __init__(self, name, value):
-        Option.__init__(name, float(value))
+        Option.__init__(self, name, float(value))
         
     def isFloatType(self):
         return True
@@ -110,7 +125,7 @@ class FloatOption(Option):
 class ChoiceOption(Option):
 
     def __init__(self, name, value, items):
-        Options__init__(name, value)
+        Options__init__(self, name, value)
         self.items = items
 
                 
@@ -122,4 +137,5 @@ class Options(object):
     def add(self, anOption):
         self.options[anOption.getName()] = anOption
         
-        
+    def get(self, name):
+        return self.options[name]
