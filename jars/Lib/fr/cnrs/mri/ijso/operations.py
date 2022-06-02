@@ -12,8 +12,12 @@ class Operation(Thread):
         self.startTime = 0
         self.endTime = 0
         self.opName = None
+        self.inputImage = None
         self.options = Options()
-        
+             
+    def setInputImage(self, image):
+        self.inputImage = image
+    
     def run(self):
         self.setStartTime(time.time())
         self.execute()
@@ -25,6 +29,9 @@ class Operation(Thread):
     def getOptions(self):
         return self.options
         
+    def getOption(self, name):
+        return self.getOptions().get(name)        
+    
     def addOption(self, anOption):
         self.getOptions().add(anOption)
         
@@ -58,6 +65,10 @@ class Operation(Thread):
     def getProgress(self):
         return self.progress
         
+    def setStatusAndProgress(self, status, progress):
+        self.setStatus(status)
+        self.setProgress(progress)
+    
     def setStartTime(self, startTime):
         self.support.firePropertyChange("startTime", self.startTime, startTime)
         self.startTime = startTime
@@ -94,6 +105,12 @@ class Option(object):
     def isFloatType(self):
         return False
         
+    def isBoolType(self):
+        return False
+        
+    def setValue(self, value):
+        self.value = value
+        
         
 class StringOption(Option):
 
@@ -121,11 +138,18 @@ class FloatOption(Option):
     def isFloatType(self):
         return True
 
+class BoolOption(Option):
+    
+    def __init__(self, name, value):
+        Option.__init__(self, name, bool(value))
+      
+    def isBoolType(self):
+        return True
 
 class ChoiceOption(Option):
 
     def __init__(self, name, value, items):
-        Options__init__(self, name, value)
+        Option.__init__(self, name, value)
         self.items = items
 
                 
@@ -139,3 +163,29 @@ class Options(object):
         
     def get(self, name):
         return self.options[name]
+        
+    def getOptionNames(self):
+        return self.options.keys()
+        
+    def getOptionNumber(self, i):
+        return self.options[self.getOptionNames()[i]]
+    
+    def length(self):
+        return len(self.options)
+    
+    def __iter__(self):
+       return OptionsIterator(self)
+       
+       
+class OptionsIterator:
+
+   def __init__(self, options):
+       self.options = options
+       self.index = 0
+   
+   def __next__(self):
+       if self._index < options.length():
+           result = self.options.getOptionNumber(index)
+           self.index = self.index + 1
+           return result
+       raise StopIteration
