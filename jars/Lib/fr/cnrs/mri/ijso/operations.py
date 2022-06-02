@@ -107,7 +107,10 @@ class Option(object):
         
     def isBoolType(self):
         return False
-        
+
+    def isChoiceType(self):
+        return False
+                
     def setValue(self, value):
         self.value = value
         
@@ -152,7 +155,18 @@ class ChoiceOption(Option):
         Option.__init__(self, name, value)
         self.items = items
 
-                
+    def isChoiceType(self):
+        return True
+         
+    def getItems(self):
+        return self.items
+           
+    def getItemsAsStrings(self):
+        if isinstance(self.items[0], str):
+            return items
+        itemStrings = [item.getOpName() for item in self.items]
+        return list(itemStrings)
+                                                                   
 class Options(object):
     
     def __init__(self):
@@ -183,9 +197,9 @@ class OptionsIterator:
        self.options = options
        self.index = 0
    
-   def __next__(self):
-       if self._index < options.length():
-           result = self.options.getOptionNumber(index)
+   def next(self):
+       if self.index < self.options.length():
+           result = self.options.getOptionNumber(self.index)
            self.index = self.index + 1
            return result
        raise StopIteration

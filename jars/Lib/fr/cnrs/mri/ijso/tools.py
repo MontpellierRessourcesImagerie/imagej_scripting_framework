@@ -1,7 +1,9 @@
 import time
 from ij import IJ
+from ij.gui import GenericDialog
 from ij.plugin.tool import MacroToolRunner
 from java.beans import PropertyChangeListener
+from fr.cnrs.mri.ijso.operations import Operation
 
 class GenericTool(PropertyChangeListener, MacroToolRunner):
     
@@ -36,8 +38,38 @@ class GenericTool(PropertyChangeListener, MacroToolRunner):
             IJ.log(time.ctime(evt.getNewValue()))
             
     def showOptionsDialog(self):
-        pass
-        
+        options = self.operation.getOptions()
+        name = self.getToolName()
+        name = name.replace("Action Tool", "Options")
+        dialog = GenericDialog(name)
+        self.addOptionsToDialog(options, dialog)
+        dialog.showDialog()
+        if dialog.wasCanceled():
+            return
+
+    def addOptionsToDialog(self, options, dialog):
+        for option in options:
+            if option.isChoiceType() and issubclass(option.getValue().__class__, Operation):
+                self.addOptionToDialog(option, dialog)
+                self.addOptionsToDialog(option.getValue().getOptions(), dialog)
+                continue
+            self.addOptionToDialog(option, dialog)
+    
+    def addOptionToDialog(self, option, dialog):
+        label = option.getName() + ": "
+        value = option.getValue()
+        if option.isStringType():
+            dialog.addStringField(label, value)
+        if option.isIntType() or option.isFloatType():
+            dialog.addNumericField(label, value)
+        if option.isBoolType():
+            dialog.addCheckbox(label, value)
+        if option.isChoiceType():
+            if issubclass(value.__class__, Operation):
+                value = value.getOpName()         
+            dialog.addChoice(label, option.getItemsAsStrings(), value)     
+            
+                    
     def runTool(self):
         pass
 
