@@ -114,6 +114,9 @@ class Option(object):
     def setValue(self, value):
         self.value = value
         
+    def __str__(self):
+        return "{} = {}".format(self.name, self.value)
+        
         
 class StringOption(Option):
 
@@ -166,6 +169,16 @@ class ChoiceOption(Option):
             return items
         itemStrings = [item.getOpName() for item in self.items]
         return list(itemStrings)
+    
+    def __str__(self):
+        if issubclass(self.getValue().__class__, Operation):
+            string = "{} = {}".format(self.name, self.value.getOpName()) 
+            if self.getValue().getOptions().length()>0: 
+                string = string + " ( " + str(self.getValue().getOptions()) + " )"
+        else:
+            string = "{} = {}".format(self.name, self.value) 
+        return string
+    
                                                                    
 class Options(object):
     
@@ -190,7 +203,14 @@ class Options(object):
     def __iter__(self):
        return OptionsIterator(self)
        
-       
+    def __str__(self):
+        string = "Options: "
+        for option in self:            
+            string = string + str(option) 
+            string = string + ", "       
+        string = string[0:len(string)-2]
+        return string    
+
 class OptionsIterator:
 
    def __init__(self, options):
