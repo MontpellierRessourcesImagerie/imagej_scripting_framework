@@ -13,13 +13,29 @@ class Operation(Thread):
         self.endTime = 0
         self.opName = None
         self.inputImage = None
+        self.resultImage = None
         self.options = Options()
+        self.runInplace = False
              
     def setInputImage(self, image):
         self.inputImage = image
+        if (self.runInplace):
+            self.resultImage = self.inputImage
+        else:
+            self.resultImage = self.inputImage.duplicate()
+    
+    def setRunInplace(self):
+        self.runInplace = True
+        
+    def resetRunInplace(self):
+        self.runInplace = False    
+    
+    def getResultImage(self):
+        return self.resultImage
     
     def run(self):
         self.setStartTime(time.time())
+        self.setStatus(str(self))
         self.execute()
         self.setEndTime(time.time())
         
@@ -28,6 +44,9 @@ class Operation(Thread):
     
     def getOptions(self):
         return self.options
+        
+    def setOptions(self, options):
+        self.options = options
         
     def getOption(self, name):
         return self.getOptions().get(name)        
@@ -83,6 +102,10 @@ class Operation(Thread):
         self.support.firePropertyChange("endTime", self.endTime, endTime)
         self.endTime = endTime            
 
+    def __str__(self):
+        string = self.getOpName() + "(" + str(self.getOptions()) + ")"
+        return string
+        
                 
 class Option(object):
     

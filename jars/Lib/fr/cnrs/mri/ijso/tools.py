@@ -5,6 +5,7 @@ from ij.gui import GenericDialog
 from ij.plugin.tool import MacroToolRunner
 from java.beans import PropertyChangeListener
 from fr.cnrs.mri.ijso.operations import Operation
+from fr.cnrs.mri.ijso.utilities import History
 
 class GenericTool(PropertyChangeListener, MacroToolRunner, ItemListener):
     
@@ -13,7 +14,14 @@ class GenericTool(PropertyChangeListener, MacroToolRunner, ItemListener):
         self.progress = 0
         self.dialog = None
         self.dialogsRead = 0
-         
+        self.operation = None
+            
+    def getOperation(self):
+        return self.operation
+        
+    def setOperation(self, operation):
+        self.operation = operation
+            
     def setToolName(self, aName):
         self.name = aName
            
@@ -30,16 +38,30 @@ class GenericTool(PropertyChangeListener, MacroToolRunner, ItemListener):
         if name.endswith("Options"):
             self.dialogsRead = 0
             self.showOptionsDialog()
-            return
+            return     
+        options = self.operation.getOptions()
+        self.operation = self.operation.__class__()
+        self.operation.setOptions(options)
         self.runTool()
-     
+                                     
+    def addHistoryEntry(self, timestamp):
+        image = self.getOperation().getResultImage()
+        if not image:
+            return
+        operation = self.getOperation()
+        newEntry = timestamp + ": " + str(operation)
+        History.fromImage(image).add(newEntry)
+                          
     def propertyChange(self, evt): 
-        if evt.getPropertyName()=="progress":
+        theProperty = evt.getPropertyName()
+        if theProperty == "progress":
             self.progress = evt.getNewValue()
-        if evt.getPropertyName()=="status":
+        if theProperty == "status":
             IJ.log(evt.getNewValue() + " (" + str(self.progress) +")")
-        if evt.getPropertyName()=="startTime" or evt.getPropertyName()=="endTime":
+        if theProperty == "startTime" or evt.getPropertyName()=="endTime":
             IJ.log(time.ctime(evt.getNewValue()))
+        if theProperty == "endTime":
+             self.addHistoryEntry(time.ctime(evt.getNewValue()))
             
     def showOptionsDialog(self):
         options = self.operation.getOptions()
