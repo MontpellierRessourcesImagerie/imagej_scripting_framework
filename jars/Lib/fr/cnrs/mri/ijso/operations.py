@@ -2,6 +2,7 @@ import time
 import re
 from java.beans import PropertyChangeSupport
 from java.lang import Thread
+from fr.cnrs.mri.ijso.measure import Measurements
 
 class Operation(Thread):
 
@@ -15,6 +16,7 @@ class Operation(Thread):
         self.inputImage = None
         self.resultImage = None
         self.options = Options()
+        self.measurements = Measurements()
         self.runInplace = False
              
     def setInputImage(self, image):
@@ -102,6 +104,9 @@ class Operation(Thread):
         self.support.firePropertyChange("endTime", self.endTime, endTime)
         self.endTime = endTime            
 
+    def getMeasurements(self):
+        return self.measurements
+        
     def __str__(self):
         string = self.getOpName() + "(" + str(self.getOptions()) + ")"
         return string
